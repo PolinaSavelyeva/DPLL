@@ -38,5 +38,49 @@ let dpll cnf =
 
     inner cnf []
 
+type DIMACSFile(pathToFile: string) =
+    let rawLines = System.IO.File.ReadLines pathToFile
+    let noCommentsLines = Seq.skipWhile (fun (n: string) -> n[0] = 'c') rawLines
+    let header = (Seq.head noCommentsLines).Split()
+    let varsNum = int header[2]
+    let clausesNum = int header[3]
+    let data = Seq.tail noCommentsLines |> Seq.removeAt clausesNum // Expected last line to be an empty line
+
+    member this.Data = data
+    member this.VarsNum = varsNum
+    member this.ClausesNum = clausesNum
+
+    member this.ToCNF =
+
+        let lineMapping (line: string) =
+            Array.takeWhile ((<>) "0") (line.Split())
+            |> Array.map (fun n ->
+                let n = n |> int
+                if n < 0 then Neg n else Pos n)
+            |> Array.toList
+
+        Seq.map lineMapping data |> Seq.toList
+
+let toDIMACSOutput valuation =
+    match valuation with
+    | [] -> "UNSAT"
+    | _ ->
+        List.fold
+            (fun acc literal ->
+                match literal with
+                | Neg l -> acc + string (-l) + " "
+                | Pos l -> acc + string l + " ")
+            "SAT "
+            valuation
+        + "0"
+
+let solve pathToRead =
+    let fileToRead = DIMACSFile(pathToRead)
+    let model = dpll fileToRead.ToCNF
+
+    printfn $"%s{toDIMACSOutput model}"
+
 [<EntryPoint>]
-let main args = 0
+let main args =
+    solve args[0]
+    0
