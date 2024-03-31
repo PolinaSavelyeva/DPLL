@@ -44,7 +44,7 @@ type DIMACSFile(pathToFile: string) =
     let header = (Seq.head noCommentsLines).Split()
     let varsNum = int header[2]
     let clausesNum = int header[3]
-    let data = Seq.tail noCommentsLines |> Seq.removeAt clausesNum // Expected last line to be an empty line
+    let data = Seq.tail noCommentsLines
 
     member this.Data = data
     member this.VarsNum = varsNum
@@ -56,21 +56,21 @@ type DIMACSFile(pathToFile: string) =
             Array.takeWhile ((<>) "0") (line.Split())
             |> Array.map (fun n ->
                 let n = n |> int
-                if n < 0 then Neg n else Pos n)
+                if n < 0 then Neg -n else Pos n)
             |> Array.toList
 
         Seq.map lineMapping data |> Seq.toList
 
 let toDIMACSOutput valuation =
     match valuation with
-    | [] -> "UNSAT"
+    | [] -> "s UNSATISFIABLE"
     | _ ->
         List.fold
             (fun acc literal ->
                 match literal with
                 | Neg l -> acc + string (-l) + " "
                 | Pos l -> acc + string l + " ")
-            "SAT "
+            "s SATISFIABLE\nv "
             valuation
         + "0"
 
