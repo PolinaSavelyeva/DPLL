@@ -82,5 +82,9 @@ let solve pathToRead =
 
 [<EntryPoint>]
 let main args =
-    solve args[0]
-    0
+    if Array.length args = 1 then
+        solve args[0]
+        0
+    else
+        printfn "Pass the one path to DIMACS file as an input argument"
+        -1
