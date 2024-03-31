@@ -61,10 +61,35 @@ type DIMACSFile(pathToFile: string) =
 
         Seq.map lineMapping data |> Seq.toList
 
-let toDIMACSOutput valuation =
+let toDIMACSOutput valuation varsNum =
     match valuation with
     | [] -> "s UNSATISFIABLE"
     | _ ->
+
+        let rec normalizeValuation curNum tail =
+            if curNum > varsNum then
+                tail
+            elif
+                (List.tryFind
+                    (fun literal ->
+                        match literal with
+                        | Pos l
+                        | Neg l -> l = curNum)
+                    valuation)
+                    .IsNone
+            then
+                normalizeValuation (curNum + 1) (tail @ [ Pos curNum ])
+            else
+                normalizeValuation (curNum + 1) tail
+
+        let valuation =
+            List.sortBy
+                (fun literal ->
+                    match literal with
+                    | Pos l
+                    | Neg l -> l)
+                (normalizeValuation varsNum valuation)
+
         List.fold
             (fun acc literal ->
                 match literal with
@@ -74,11 +99,11 @@ let toDIMACSOutput valuation =
             valuation
         + "0"
 
-let solve pathToRead =
-    let fileToRead = DIMACSFile(pathToRead)
-    let model = dpll fileToRead.ToCNF
+let solve pathToFile =
+    let file = DIMACSFile(pathToFile)
+    let model = dpll file.ToCNF
 
-    printfn $"%s{toDIMACSOutput model}"
+    printfn $"%s{toDIMACSOutput model file.VarsNum}"
 
 [<EntryPoint>]
 let main args =
