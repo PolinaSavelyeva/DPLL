@@ -21,8 +21,8 @@ jobs:
         env:
           CI: true
 
-      - name: Test via Ubuntu
-        if: runner.os == 'ubuntu-latest'
+      - name: Test via Linux
+        if: runner.os == 'Linux'
         run: |
             sudo apt install picosat
             chmod +x ./test.sh
