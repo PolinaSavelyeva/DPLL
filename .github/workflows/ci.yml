@@ -10,6 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - uses: actions/checkout@v2
       - name: Setup .NET Core 7.0.x SDK
         uses: actions/setup-dotnet@v1
         with:
@@ -19,7 +20,7 @@ jobs:
         run: dotnet build    
         env:
           CI: true
-          
+
       - name: Test via Bash
         if: runner.os != 'Windows'
         run: |
