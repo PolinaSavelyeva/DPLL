@@ -12,7 +12,7 @@ let neg literal =
     | Neg l -> Pos l
 
 let propagate literal cnf =
-    List.filter (fun clause -> clause <> [ literal ] && (List.contains literal clause |> not)) cnf
+    List.filter (fun clause -> List.contains literal clause |> not) cnf
     |> List.map (List.filter ((<>) (neg literal)))
 
 let dpll cnf =
