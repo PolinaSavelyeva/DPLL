@@ -1,0 +1,33 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup necessary dotnet SDKs
+        uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: global.json
+          dotnet-version: |
+            7.x
+
+      - name: Build
+        run: dotnet build    
+        env:
+          CI: true
+      - name: Test via Bash
+        if: runner.os != 'Windows'
+        run: |
+            chmod +x ./test.sh
+            ./test.sh examples/example.cnf
+            ./test.sh examples/aim-50-1_6-yes1-4.cnf
+            ./test.sh examples/aim-100-1_6-no-1.cnf
+        env:
+          CI: true
