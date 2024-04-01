@@ -66,9 +66,9 @@ let toDIMACSOutput valuation varsNum =
     | [] -> "s UNSATISFIABLE"
     | _ ->
 
-        let rec normalizeValuation curNum tail =
+        let rec normalizeValuation curNum ans =
             if curNum > varsNum then
-                tail
+                ans
             elif
                 (List.tryFind
                     (fun literal ->
@@ -78,9 +78,9 @@ let toDIMACSOutput valuation varsNum =
                     valuation)
                     .IsNone
             then
-                normalizeValuation (curNum + 1) (tail @ [ Pos curNum ])
+                normalizeValuation (curNum + 1) (ans @ [ Pos curNum ])
             else
-                normalizeValuation (curNum + 1) tail
+                normalizeValuation (curNum + 1) ans
 
         let valuation =
             List.sortBy
