@@ -1,6 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DPLL", "DPLL.fsproj", "{7590FDFA-5864-4309-9207-0069BB738638}"
+# 
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DPLL", "src\DPLL.fsproj", "{C2727D9B-A017-4725-B305-B7390D91807B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +13,9 @@ Global
 		{7590FDFA-5864-4309-9207-0069BB738638}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7590FDFA-5864-4309-9207-0069BB738638}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7590FDFA-5864-4309-9207-0069BB738638}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2727D9B-A017-4725-B305-B7390D91807B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2727D9B-A017-4725-B305-B7390D91807B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2727D9B-A017-4725-B305-B7390D91807B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2727D9B-A017-4725-B305-B7390D91807B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

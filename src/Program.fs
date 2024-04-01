@@ -92,9 +92,13 @@ let toDIMACSOutput valuation varsNum =
 
         List.fold
             (fun acc literal ->
-                match literal with
-                | Neg l -> acc + string (-l) + " "
-                | Pos l -> acc + string l + " ")
+                let literalVal =
+                    match literal with
+                    | Neg l -> -l
+                    | Pos l -> l
+
+                let sep = if String.length acc % 77 = 0 then "\nv " else " "
+                acc + string literalVal + sep)
             "s SATISFIABLE\nv "
             valuation
         + "0"
