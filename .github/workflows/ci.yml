@@ -11,6 +11,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: picosat
+          version: 1.0
+
       - name: Setup .NET Core 7.0.x SDK
         uses: actions/setup-dotnet@v1
         with:
