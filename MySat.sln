@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # 
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DPLL", "src\DPLL.fsproj", "{C2727D9B-A017-4725-B305-B7390D91807B}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MySat", "src\MySat.fsproj", "{C2727D9B-A017-4725-B305-B7390D91807B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
