@@ -1,19 +1,40 @@
-﻿type Literal<'Value> =
+﻿open System.Collections.Generic
+open Microsoft.FSharp.Collections
+open Microsoft.FSharp.Core
+
+type Literal<'Value> =
     | Pos of 'Value
     | Neg of 'Value
 
 type Clause<'Value> = list<Literal<'Value>>
 type Valuation<'Value> = list<Literal<'Value>>
 type CNF<'Value> = list<Clause<'Value>>
-
+    
 let neg literal =
     match literal with
     | Pos l -> Neg l
     | Neg l -> Pos l
 
-let propagate literal cnf =
-    List.filter (fun clause -> List.contains literal clause |> not) cnf
-    |> List.map (List.filter ((<>) (neg literal)))
+type Special =
+    | None
+    | PosSign
+    | NegSign
+    | NonPure
+    
+let specialAnd oldValue newValue =
+    match oldValue, newValue with
+    | None, v -> v
+    | NonPure, _ | _, NonPure | PosSign, NegSign | NegSign, PosSign -> NonPure
+    | PosSign, PosSign -> PosSign
+    | NegSign, NegSign -> NegSign
+    | _ -> failwith "Unexpected None as a second argument"
+    
+let propagate cnf unitClauses negUnitClauses =
+    List.choose (fun clause -> let clauseSet = Set.ofList clause
+                               if (clauseSet - unitClauses).IsEmpty then
+                                  Some (clauseSet - negUnitClauses |> Set.toList)
+                               else
+                                  Option.None) cnf
 
 let dpll cnf =
     let rec inner cnf valuation =
@@ -22,19 +43,28 @@ let dpll cnf =
         elif List.contains [] cnf then
             []
         else
-            let unitClause = List.tryFind (fun clause -> List.length clause = 1) cnf
+            let unitClauses = List.choose (fun clause -> if List.length clause = 1 then Some (List.head clause) else Option.None) cnf |> Set.ofList
+            let negUnitClauses = Set.map neg unitClauses
+            let cnf = propagate cnf unitClauses negUnitClauses
+            
+            let folder (acc: Map<int, Special>) literal =
+                match literal with
+                | Pos l -> acc.Change (l, (fun _ -> Some (specialAnd PosSign acc[l])))
+                | Neg l -> acc.Change (l, (fun _ -> Some (specialAnd NegSign acc[l])))
 
-            if unitClause.IsSome then
-                let unitLiteral = unitClause.Value |> List.head
-                inner (propagate unitLiteral cnf) (valuation @ [ unitLiteral ])
+            let literalsInUse = List.fold (List.fold folder) Map.empty cnf
+            let pureLiteralsSet = Map.fold (fun acc key special -> match special with
+                                                              | PosSign -> acc @ [Pos key]
+                                                              | NegSign -> acc @ [Neg key]) [] literalsInUse |> Set.ofList
+            let cnf = List.filter (fun clause -> (Set.ofList clause - pureLiteralsSet).IsEmpty) cnf         
+
+            let fstLiteral = List.head cnf |> List.head
+            let res = inner (propagate cnf (Set [fstLiteral]) (Set [neg fstLiteral]) ) (valuation @ [ fstLiteral ])
+
+            if List.isEmpty res then
+                inner (propagate cnf (Set [neg fstLiteral]) (Set [fstLiteral])) (valuation @ [ neg fstLiteral ])
             else
-                let fstLiteral = List.head cnf |> List.head
-                let res = inner (propagate fstLiteral cnf) (valuation @ [ fstLiteral ])
-
-                if List.isEmpty res then
-                    inner (propagate (neg fstLiteral) cnf) (valuation @ [ neg fstLiteral ])
-                else
-                    res
+                res
 
     inner cnf []
 
