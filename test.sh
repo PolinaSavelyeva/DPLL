@@ -3,7 +3,7 @@
 mysat_ans=`mktemp`
 unsat_msg="s UNSATISFIABLE"
 
-cd src && dotnet run ../$1 > $mysat_ans && cd ..
+dotnet run $1 > $mysat_ans
 echo mysat answer:; cat $mysat_ans; echo 
 
 if [ "`cat $mysat_ans`" = "$unsat_msg" ]; then
