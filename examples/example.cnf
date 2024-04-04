@@ -2,6 +2,8 @@ c
 c start with comments
 c
 c 
-p cnf 3 2
+p cnf 3 4
 1 2 -3 0
 -2 3 0   
+3 0
+-3 0
