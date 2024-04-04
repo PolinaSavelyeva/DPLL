@@ -23,9 +23,10 @@ type Special =
 let specialAnd (oldValue: option<Special>) newValue =
     match oldValue, newValue with
     | None, v -> v
-    | Some NonPure, _ | _, NonPure | Some PosSgn, NegSgn | Some NegSgn, PosSgn -> NonPure
+    | Some NonPure, _ |Some PosSgn, NegSgn | Some NegSgn, PosSgn -> NonPure
     | Some PosSgn, PosSgn -> PosSgn
     | Some NegSgn, NegSgn -> NegSgn
+    | _, NonPure -> failwith "Unexpected NonPure as a second argument"
     
 let propagate cnf literals =
     let negLiterals = Set.map neg literals
@@ -124,12 +125,11 @@ let solve pathToFile =
 
 [<EntryPoint>]
 let main args =
-    // if Array.length args = 1 then
-    //     solve args[0]
-    //     0
-    // else
-    //     printfn "Pass the one path to DIMACS file as an input argument"
-    //     -1
-   //0
-    solve "/Users/svmena/Documents/MySat/examples/aim-100-1_6-no-1.cnf"
-    0
+    if Array.length args = 1 then
+        solve args[0]
+        0
+    else
+        printfn "Pass the one path to DIMACS file as an input argument"
+        -1
+
+
