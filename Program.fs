@@ -58,6 +58,7 @@ let dpll cnf =
                             acc)
                     []
                     cnf
+                |> List.distinct
 
             if List.exists (fun unitClause -> List.contains (neg unitClause) unitClauses) unitClauses then
                 []
