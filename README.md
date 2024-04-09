@@ -44,7 +44,7 @@ v 1 -2 3 0
     dotnet build
     ```
    
-   or build in release configuration
+   or build in release configuration:
 
    ```
    dotnet build --configuration Release
