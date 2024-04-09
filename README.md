@@ -14,13 +14,13 @@ Simple console SAT-solver that utilizes DPLL algorithm and DIMACS input/output f
 1. Navigate to the directory:
 
     ```
-    cd MySat/src/
+    cd MySat/
     ```
 
 2. Provide the relative or absolute path to input data in DIMACS format and run as follows:
 
     ```
-    dotnet run ../examples/example.cnf
+    dotnet run examples/example.cnf
     ```
 
 The result of the above command:
@@ -43,6 +43,12 @@ v 1 -2 3 0
     ```
     dotnet build
     ```
+   
+   or build in release configuration
+
+   ```
+   dotnet build --configuration Release
+   ```
 
 ## Testing via Bash
 

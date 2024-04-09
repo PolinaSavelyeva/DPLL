@@ -171,11 +171,9 @@ let solve pathToFile =
 
 [<EntryPoint>]
 let main args =
-    (*if Array.length args = 1 then
+    if Array.length args = 1 then
         solve args[0]
         0
     else
         printfn "Pass the one path to DIMACS file as an input argument"
-        -1*)
-    solve "/Users/svmena/Documents/MySat/examples/aim-100-1_6-no-1.cnf"
-    0
+        -1
