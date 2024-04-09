@@ -156,8 +156,8 @@ let toDIMACSOutput (valuation: Valuation) varsNum =
             valuation
 
         Array.fold
-            (fun acc value ->
-                let sep = if abs value % 40 = 0 then "\nv " else " "
+            (fun (acc: string) value ->
+                let sep = if (acc.Length - 15) % 40 = 0 then "\nv " else " "
                 acc + string value + sep)
             "s SATISFIABLE\nv "
             ansArray
