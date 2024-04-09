@@ -59,7 +59,7 @@ let dpll cnf =
                     []
                     cnf
 
-            if List.exists (fun unitClause -> List.contains (neg unitClause) unitClauses) unitClauses then // forall
+            if List.exists (fun unitClause -> List.contains (neg unitClause) unitClauses) unitClauses then
                 []
             else
                 let cnf, valuation =
@@ -73,7 +73,7 @@ let dpll cnf =
                     | Pos l -> acc.Add(l, specialAnd (acc.TryFind l) PosSgn)
                     | Neg l -> acc.Add(l, specialAnd (acc.TryFind l) NegSgn)
 
-                let literalsInUse = List.fold (List.fold folder) Map.empty cnf // List.collect
+                let literalsInUse = List.fold (List.fold folder) Map.empty cnf
 
                 let pureLiterals =
                     Map.fold
