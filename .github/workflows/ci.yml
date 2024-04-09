@@ -27,6 +27,7 @@ jobs:
             sudo apt install picosat
             chmod +x ./test.sh
             ./test.sh examples/example.cnf
+            ./test.sh examples/example2.cnf
             ./test.sh examples/aim-50-1_6-yes1-4.cnf
             ./test.sh examples/aim-100-1_6-no-1.cnf
         env:
