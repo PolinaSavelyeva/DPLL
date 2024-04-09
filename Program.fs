@@ -1,14 +1,12 @@
-﻿open System.Collections.Generic
-open Microsoft.FSharp.Collections
-open Microsoft.FSharp.Core
+﻿open Microsoft.FSharp.Collections
 
-type Literal<'Value> =
-    | Pos of 'Value
-    | Neg of 'Value
+type Literal =
+    | Pos of int
+    | Neg of int
 
-type Clause<'Value when 'Value: comparison> = Set<Literal<'Value>>
-type Valuation<'Value when 'Value: comparison> = Set<Literal<'Value>>
-type CNF<'Value when 'Value: comparison> = Set<Clause<'Value>>
+type Clause = list<Literal>
+type Valuation = list<Literal>
+type CNF = list<Clause>
 
 let neg literal =
     match literal with
@@ -20,7 +18,7 @@ type Special =
     | NegSgn
     | NonPure
 
-let specialAnd (oldValue: option<Special>) newValue =
+let specialAnd oldValue newValue =
     match oldValue, newValue with
     | None, v -> v
     | Some NonPure, _
@@ -31,79 +29,91 @@ let specialAnd (oldValue: option<Special>) newValue =
     | _, NonPure -> failwith "Unexpected NonPure as a second argument"
 
 let propagate cnf literals =
-    let negLiterals = Set.map neg literals
+    let literalsSet = Set.ofList literals
+    let negLiteralsSet = Set.map neg literalsSet
 
-    Set.fold
-        (fun acc clause ->
-            if (Set.intersect clause literals).IsEmpty then
-                Set.add (clause - negLiterals) acc
+    List.choose
+        (fun clause ->
+            let clauseSet = Set.ofList clause
+
+            if (Set.intersect clauseSet literalsSet).IsEmpty then
+                Some(clauseSet - negLiteralsSet |> Set.toList)
             else
-                acc)
-        Set.empty
+                Option.None)
         cnf
 
 let dpll cnf =
-    let rec inner (cnf: CNF<int>) (valuation: Valuation<int>) =
+    let rec inner (cnf: CNF) (valuation: Valuation) =
         if cnf.IsEmpty then
             valuation
-        elif cnf.Contains Set.empty then
-            Set.empty
+        elif List.contains [] cnf then
+            []
         else
-            let unitLiterals =
-                Set.fold
-                    (fun acc (clause: Set<Literal<int>>) -> if clause.Count = 1 then Set.union clause acc else acc)
-                    Set.empty
+            let unitClauses =
+                List.fold
+                    (fun acc clause ->
+                        if List.length clause = 1 then
+                            List.head clause :: acc
+                        else
+                            acc)
+                    []
                     cnf
 
-            if Set.exists (fun unitLiteral -> Set.contains (neg unitLiteral) unitLiterals) unitLiterals then
-                Set.empty
+            if List.exists (fun unitClause -> List.contains (neg unitClause) unitClauses) unitClauses then // forall
+                []
             else
                 let cnf, valuation =
-                    if unitLiterals.IsEmpty then
+                    if unitClauses.IsEmpty then
                         cnf, valuation
                     else
-                        propagate cnf unitLiterals, Set.union unitLiterals valuation
+                        propagate cnf unitClauses, unitClauses @ valuation
 
                 let folder (acc: Map<int, Special>) literal =
                     match literal with
                     | Pos l -> acc.Add(l, specialAnd (acc.TryFind l) PosSgn)
                     | Neg l -> acc.Add(l, specialAnd (acc.TryFind l) NegSgn)
 
-                let literalsInUse = Set.fold (Set.fold folder) Map.empty cnf
+                let literalsInUse = List.fold (List.fold folder) Map.empty cnf // List.collect
 
                 let pureLiterals =
                     Map.fold
                         (fun acc key special ->
                             match special with
-                            | PosSgn -> Set.add (Pos key) acc
-                            | NegSgn -> Set.add (Neg key) acc
+                            | PosSgn -> Pos key :: acc
+                            | NegSgn -> Neg key :: acc
                             | _ -> acc)
-                        Set.empty
+                        []
                         literalsInUse
+
+                let pureLiteralsSet = Set.ofList pureLiterals
 
                 let cnf, valuation =
                     if pureLiterals.IsEmpty then
                         cnf, valuation
                     else
-                        Set.filter (fun clause -> (Set.intersect clause pureLiterals).IsEmpty) cnf,
-                        Set.union pureLiterals valuation
+                        List.filter
+                            (fun clause ->
+                                let clauseSet = clause |> Set.ofList
+                                (Set.intersect clauseSet pureLiteralsSet).IsEmpty)
+                            cnf,
+                        pureLiterals @ valuation
 
                 if cnf.IsEmpty then
                     valuation
-                elif cnf.Contains Set.empty then
-                    Set.empty
+                elif List.contains [] cnf then
+                    []
                 else
-                    let fstLiteral = Seq.head cnf |> Seq.head
+                    let fstLiteral = List.head cnf |> List.head
 
-                    let res =
-                        inner (propagate cnf (Set.singleton fstLiteral)) (Set.add fstLiteral valuation)
+                    let res = inner (propagate cnf [ fstLiteral ]) (fstLiteral :: valuation)
 
                     if res.IsEmpty then
-                        inner (propagate cnf (Set.singleton (neg fstLiteral))) (Set.add (neg fstLiteral) valuation)
+                        let negFstLiteral = neg fstLiteral
+                        inner (propagate cnf [ negFstLiteral ]) (negFstLiteral :: valuation)
                     else
                         res
 
-    inner cnf Set.empty
+    inner cnf []
 
 type DIMACSFile(pathToFile: string) =
     let rawLines = System.IO.File.ReadLines pathToFile
@@ -128,17 +138,17 @@ type DIMACSFile(pathToFile: string) =
             |> Array.map (fun n ->
                 let n = n |> int
                 if n < 0 then Neg -n else Pos n)
-            |> Set.ofArray
+            |> List.ofArray
 
-        Seq.map lineMapping data |> Set
+        Seq.map lineMapping data |> Seq.toList
 
-let toDIMACSOutput (valuation: Valuation<int>) varsNum =
+let toDIMACSOutput (valuation: Valuation) varsNum =
     if valuation.IsEmpty then
         "s UNSATISFIABLE"
     else
         let ansArray = [| 1..varsNum |]
 
-        Set.iter
+        List.iter
             (fun literal ->
                 match literal with
                 | Neg l -> ansArray[l - 1] <- -ansArray[l - 1]
@@ -161,9 +171,11 @@ let solve pathToFile =
 
 [<EntryPoint>]
 let main args =
-    if Array.length args = 1 then
+    (*if Array.length args = 1 then
         solve args[0]
         0
     else
         printfn "Pass the one path to DIMACS file as an input argument"
-        -1
+        -1*)
+    solve "/Users/svmena/Documents/MySat/examples/aim-100-1_6-no-1.cnf"
+    0
