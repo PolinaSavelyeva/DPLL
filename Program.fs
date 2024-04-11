@@ -50,7 +50,7 @@ let dpll cnf =
         | _ ->
             let unitClauses =
                 List.choose
-                    (fun acc clause ->
+                    (fun clause ->
                         if List.length clause = 1 then
                             Some(List.head clause)
                         else
