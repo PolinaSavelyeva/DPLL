@@ -1,0 +1,34 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core 7.0.x SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '7.0.x'
+
+      - name: Build
+        run: dotnet build    
+        env:
+          CI: true
+
+      - name: Test via Linux
+        if: runner.os == 'Linux'
+        run: |
+            sudo apt install picosat
+            chmod +x ./test.sh
+            ./test.sh examples/example.cnf
+            ./test.sh examples/example2.cnf
+            ./test.sh examples/aim-50-1_6-yes1-4.cnf
+            ./test.sh examples/aim-100-1_6-no-1.cnf
+        env:
+          CI: true
