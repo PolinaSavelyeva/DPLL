@@ -44,19 +44,17 @@ let propagate cnf literals =
 
 let dpll cnf =
     let rec inner (cnf: CNF) (valuation: Valuation) =
-        if cnf.IsEmpty then
-            valuation
-        elif List.contains [] cnf then
-            []
-        else
+        match cnf with
+        | [] -> valuation
+        | _ when List.contains [] cnf -> []
+        | _ ->
             let unitClauses =
-                List.fold
+                List.choose
                     (fun acc clause ->
                         if List.length clause = 1 then
-                            List.head clause :: acc
+                            Some(List.head clause)
                         else
-                            acc)
-                    []
+                            None)
                     cnf
                 |> List.distinct
 
@@ -86,26 +84,20 @@ let dpll cnf =
                         []
                         literalsInUse
 
-                let pureLiteralsSet = Set.ofList pureLiterals
-
                 let cnf, valuation =
                     if pureLiterals.IsEmpty then
                         cnf, valuation
                     else
-                        List.filter
-                            (fun clause ->
-                                let clauseSet = clause |> Set.ofList
-                                (Set.intersect clauseSet pureLiteralsSet).IsEmpty)
-                            cnf,
+                        let pureLiteralsSet = Set.ofList pureLiterals
+
+                        List.filter (fun clause -> (Set.intersect (Set.ofList clause) pureLiteralsSet).IsEmpty) cnf,
                         pureLiterals @ valuation
 
-                if cnf.IsEmpty then
-                    valuation
-                elif List.contains [] cnf then
-                    []
-                else
+                match cnf with
+                | [] -> valuation
+                | _ when List.contains [] cnf -> []
+                | _ ->
                     let fstLiteral = List.head cnf |> List.head
-
                     let res = inner (propagate cnf [ fstLiteral ]) (fstLiteral :: valuation)
 
                     if res.IsEmpty then
