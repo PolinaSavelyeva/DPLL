@@ -1,4 +1,5 @@
 ﻿open Microsoft.FSharp.Collections
+open System.Diagnostics
 
 type Literal =
     | Pos of int
@@ -163,10 +164,24 @@ let solve pathToFile =
     printfn $"%s{toDIMACSOutput model file.VarsNum}"
 
 [<EntryPoint>]
-let main args =
-    if Array.length args = 1 then
-        solve args[0]
-        0
-    else
-        printfn "Pass the one path to DIMACS file as an input argument"
-        -1
+let main _ =
+    let warmupCNF = DIMACSFile("examples/aim-50-1_6-yes1-4.cnf").ToCNF
+    let cnf = DIMACSFile("dataset.cnf").ToCNF
+
+    printfn ("Begin warmup...")
+
+    for i in 1..40 do
+        dpll warmupCNF |> ignore
+
+    printfn ("Finish warmup")
+
+    let stopwatch = Stopwatch()
+
+    for i in 1..40 do
+        stopwatch.Restart()
+        dpll cnf |> ignore
+        stopwatch.Stop()
+
+        printfn ($"%f{stopwatch.Elapsed.TotalMilliseconds}")
+
+    0
