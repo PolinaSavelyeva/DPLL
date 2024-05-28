@@ -168,12 +168,8 @@ let main _ =
     let warmupCNF = DIMACSFile("examples/aim-50-1_6-yes1-4.cnf").ToCNF
     let cnf = DIMACSFile("dataset.cnf").ToCNF
 
-    printfn ("Begin warmup...")
-
     for i in 1..40 do
         dpll warmupCNF |> ignore
-
-    printfn ("Finish warmup")
 
     let stopwatch = Stopwatch()
 
