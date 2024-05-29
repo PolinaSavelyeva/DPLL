@@ -165,18 +165,20 @@ let solve pathToFile =
 
 [<EntryPoint>]
 let main _ =
-    let warmupCNF = DIMACSFile("examples/aim-50-1_6-yes1-4.cnf").ToCNF
+    let warmupCNF = DIMACSFile("examples/aim-100-1_6-no-1.cnf").ToCNF
     let cnf = DIMACSFile("dataset.cnf").ToCNF
 
     // Check the accurate of timer on your machine
-    printfn($"Timer high resolution mode is set to = %A{Stopwatch.IsHighResolution}")
+    printfn($"Timer high resolution mode is set to %A{Stopwatch.IsHighResolution}.")
     let frequency = Stopwatch.Frequency
-    printfn ($"Timer frequency in ticks per second = %A{frequency}")
+    printfn ($"Timer frequency in ticks per second = %A{frequency}.")
     let nanosecPerTick = (1000L*1000L*1000L) / frequency // L for long int
-    printfn ($"Timer is accurate within %A{nanosecPerTick} nanoseconds")
+    printfn ($"Timer is accurate within %A{nanosecPerTick} nanoseconds.")
 
-    for i in 1..80 do
+    printfn ("Begin warmup...")
+    for i in 1..2 do
         dpll warmupCNF |> ignore
+    printfn ("End warmup.\nBegin benchmarking...")
 
     let stopwatch = Stopwatch()
 
@@ -184,8 +186,9 @@ let main _ =
         stopwatch.Restart()
         dpll cnf |> ignore
         stopwatch.Stop()
-
         printfn ($"%f{stopwatch.Elapsed.TotalMilliseconds}")
+
+    printfn ("End benchmarking.")
 
     0
     
