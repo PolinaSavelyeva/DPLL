@@ -168,7 +168,14 @@ let main _ =
     let warmupCNF = DIMACSFile("examples/aim-50-1_6-yes1-4.cnf").ToCNF
     let cnf = DIMACSFile("dataset.cnf").ToCNF
 
-    for i in 1..40 do
+    // Check the accurate of timer on your machine
+    printfn($"Timer high resolution mode is set to = %A{Stopwatch.IsHighResolution}")
+    let frequency = Stopwatch.Frequency
+    printfn ($"Timer frequency in ticks per second = %A{frequency}")
+    let nanosecPerTick = (1000L*1000L*1000L) / frequency // L for long int
+    printfn ($"Timer is accurate within %A{nanosecPerTick} nanoseconds")
+
+    for i in 1..80 do
         dpll warmupCNF |> ignore
 
     let stopwatch = Stopwatch()
@@ -181,3 +188,4 @@ let main _ =
         printfn ($"%f{stopwatch.Elapsed.TotalMilliseconds}")
 
     0
+    
