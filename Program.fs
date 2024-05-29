@@ -176,7 +176,7 @@ let main _ =
     printfn ($"Timer is accurate within %A{nanosecPerTick} nanoseconds.")
 
     printfn ("Begin warmup...")
-    for i in 1..2 do
+    for i in 1..4 do
         dpll warmupCNF |> ignore
     printfn ("End warmup.\nBegin benchmarking...")
 
